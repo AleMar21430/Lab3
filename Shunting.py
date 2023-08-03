@@ -24,7 +24,7 @@ def infix_to_postfix(infix_expr):
 		elif char == ')':
 			while operator_stack and operator_stack[-1] != '(':
 				output_queue.append(operator_stack.pop())
-			operator_stack.pop()  # Pop the '(' from the stack
+			operator_stack.pop()
 		elif is_operator(char):
 			while (operator_stack and is_operator(operator_stack[-1])
 				and operator_precedence[operator_stack[-1]] >= operator_precedence[char]):
