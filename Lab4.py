@@ -10,7 +10,7 @@ class Tree_Node:
 		if self.value.isalnum(): return f"{self.value}"
 		else: return f"({self.value} {str(self.L)} {str(self.R)})"
 
-def syntaxTree(expr):
+def syntaxTree(expr) -> Tree_Node | None:
 	Stack = []
 	for Char in expr:
 		if Char in ['*', '+', '?', '.' , '|']:
@@ -138,11 +138,45 @@ def infixToPostfix(expression):
 	while len(Stack) > 0: postfixExpr += Stack.pop()
 	return postfixExpr
 
+def simulate_NFA(node: Tree_Node, string):
+	if not node:
+		return False
+	
+	if node.value.isalnum():
+		if len(string) == 0:
+			return False
+		elif string[0] == node.value:
+			return simulate_NFA(node.R, string[1:])
+		else:
+			return False
+	else:
+		if node.value == '.':
+			for i in range(len(string) + 1):
+				if simulate_NFA(node.L, string[:i]) and simulate_NFA(node.R, string[i:]):
+					return True
+			return False
+		elif node.value == '|':
+			return simulate_NFA(node.L, string) or simulate_NFA(node.R, string)
+		elif node.value == '*':
+			for i in range(len(string) + 1):
+				if simulate_NFA(node.L, string[:i]) and simulate_NFA(node.R, string[i:]):
+					return True
+			return simulate_NFA(node.L, string)
+		elif node.value == '+':
+			return simulate_NFA(node.L, string) and simulate_NFA(node.R, string[1:])
+		elif node.value == '?':
+			return simulate_NFA(node.L, string) or simulate_NFA(node.R, string)
+
+
+expresion = input("Cadena w:  ")
+
 with open("./Expressions.txt" , 'r', encoding = 'utf-8') as File:
 	for i, File_Line in enumerate(File):
 		infix_expr = File_Line.strip()
 		postfix_expr = infixToPostfix(infix_expr)
 		tree = syntaxTree(postfix_expr)
-		graph = Digraph(f"{i}",format='png')
-		drawTree(graph, tree)
-		graph.view()
+		#graph = Digraph(f"{i}",format='png')
+		#drawTree(graph, tree)
+		#graph.view()
+		print("La expresión: " + expresion + " pertenece a " + File_Line.strip() + "        ?: " + str(simulate_NFA(tree, expresion)))
+
